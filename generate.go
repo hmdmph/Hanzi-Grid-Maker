@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	AppName    = "Print Square"
+	AppName    = "Hanzi Grid Maker - Xizi"
 	AppVersion = "1.0.0"
 	AppID      = "com.tsprintables.printsquare"
 	AppAuthor  = "TS Printables<hmdmph@gmail.com>"

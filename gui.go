@@ -157,7 +157,7 @@ func launchGUI() {
 	redIcon.CornerRadius = 3
 	redIcon.SetMinSize(fyne.NewSize(24, 24))
 
-	titleText := canvas.NewText("Print Square", accentRed)
+	titleText := canvas.NewText("Hanzi Grid Maker — Xizi", accentRed)
 	titleText.TextSize = 22
 	titleText.TextStyle = fyne.TextStyle{Bold: true}
 

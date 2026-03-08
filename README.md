@@ -1,4 +1,4 @@
-# 🟥 Print Square
+# 🟥 Hanzi Grid Maker - Xizi
 
 A cross-platform tool to generate printable grid-box PDFs on A4 paper — built for **Chinese character writing practice**.
 
@@ -129,10 +129,10 @@ print-square/
 ## PDF Metadata
 
 Generated PDFs include embedded metadata:
-- **Title:** Print Square — Practice Grid
+- **Title:** Hanzi Grid Maker — Xizi
 - **Author:** TS Printables
 - **Subject:** Grid practice paper for Chinese character writing
-- **Creator:** Print Square v1.0.0
+- **Creator:** Hanzi Grid Maker — Xizi v1.0.0
 - **Keywords:** grid, chinese, practice, tianzige, mizige, calligraphy, writing
 
 ## License

@@ -1,4 +1,4 @@
-APP      := print-square
+APP      := hanze-grid-maker
 BUILD    := ./build
 HEADER   := TS Printables
 FOOTER   := I can do this
