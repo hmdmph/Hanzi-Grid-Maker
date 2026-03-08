@@ -8,6 +8,9 @@ A cross-platform tool to generate printable grid-box PDFs on A4 paper - built fo
 
 Available as a **native desktop app** (macOS `.app`, Windows `.exe`) or a **CLI** for power users.
 
+### Web UI and native GUI side-by-side
+![img_1.png](img_1.png)
+
 ## Grid Styles
 
 | Style | Name | Description                                      |
