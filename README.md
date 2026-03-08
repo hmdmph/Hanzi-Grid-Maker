@@ -1,22 +1,26 @@
-# 🟥 Hanzi Grid Maker - Xizi
+<p align="center">
+  <img src="image.png" alt="Hanzi Grid Maker - Xizi" width="128">
+</p>
 
-A cross-platform tool to generate printable grid-box PDFs on A4 paper — built for **Chinese character writing practice**.
+# Hanzi Grid Maker - Xizi
+
+A cross-platform tool to generate printable grid-box PDFs on A4 paper - built for **Chinese character writing practice**.
 
 Available as a **native desktop app** (macOS `.app`, Windows `.exe`) or a **CLI** for power users.
 
 ## Grid Styles
 
-| Style | Name | Description |
-|-------|------|-------------|
-| `none` | Plain | Empty boxes |
-| `tianzige` | 田字格 (Tián Zì Gé) | Cross guides — divides each box into 4 quadrants |
-| `mizige` | 米字格 (Mǐ Zì Gé) | Star guides — cross + diagonals (resembles 米) |
+| Style | Name | Description                                      |
+|-------|------|--------------------------------------------------|
+| `none` | Plain | Empty boxes                                      |
+| `tianzige` | 田字格 (Tián Zì Gé) | Cross guides - divides each box into 4 quadrants |
+| `mizige` | 米字格 (Mǐ Zì Gé) | Star guides - cross + diagonals (resembles 米)    |
 
 ## Quick Start
 
 ### Option A: Native Desktop App (recommended)
 
-Double-click **PrintSquare.app** (macOS) or **print-square-gui.exe** (Windows).
+Double-click **Hanzi-grid-maker.app** (macOS) or **hanze-grid-maker-gui.exe** (Windows).
 
 A native window opens with form fields, style selection, and a Generate button. No browser, no terminal needed.
 
@@ -33,7 +37,7 @@ make package-macos  # create macOS .app bundle
 make web
 ```
 
-Opens a browser with an embedded UI. Works without CGO — useful on headless machines or when you can't build the native GUI.
+Opens a browser with an embedded UI. Works without CGO - useful on headless machines or when you can't build the native GUI.
 
 ### Option C: Command Line (pro users)
 
@@ -65,7 +69,7 @@ make build-gui   # native GUI (requires CGO)
 
 ```bash
 make package-macos
-# → ./build/PrintSquare.app
+# → ./build/Hanzi-grid-maker.app
 # Drag to /Applications to install
 ```
 
@@ -103,7 +107,7 @@ Produces CLI binaries in `./build/` for:
 The project uses **Go build tags** to keep the CLI small and dependency-free, while the native GUI is opt-in:
 
 - **`make build`** → CLI binary. No CGO, no native deps. Cross-compiles to any OS.
-- **`make build-gui`** → Native GUI binary. Uses [Fyne](https://fyne.io) toolkit (requires CGO). Produces a real desktop window — not a browser.
+- **`make build-gui`** → Native GUI binary. Uses [Fyne](https://fyne.io) toolkit (requires CGO). Produces a real desktop window - not a browser.
 - The macOS `.app` bundle **auto-detects** that it's running from a bundle and launches the GUI without needing `-ui`.
 
 ### Project Structure
@@ -115,6 +119,8 @@ print-square/
 ├── gui.go           # Native Fyne GUI (build tag: gui)
 ├── gui_stub.go      # Stub when built without GUI
 ├── server.go        # Browser-based web UI server
+├── icon.go          # Embeds image.png for all builds
+├── image.png        # App logo (文 character with grid)
 ├── ui/
 │   └── index.html   # Embedded HTML for web UI
 ├── build/
@@ -129,12 +135,12 @@ print-square/
 ## PDF Metadata
 
 Generated PDFs include embedded metadata:
-- **Title:** Hanzi Grid Maker — Xizi
+- **Title:** Hanzi Grid Maker - Xizi
 - **Author:** TS Printables
 - **Subject:** Grid practice paper for Chinese character writing
-- **Creator:** Hanzi Grid Maker — Xizi v1.0.0
+- **Creator:** Hanzi Grid Maker - Xizi v1.0.0
 - **Keywords:** grid, chinese, practice, tianzige, mizige, calligraphy, writing
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).

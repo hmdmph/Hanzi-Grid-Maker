@@ -87,7 +87,7 @@ func GeneratePDF(cfg GridConfig, w io.Writer) (GridInfo, error) {
 	pdf.SetAutoPageBreak(false, 0)
 
 	// PDF metadata
-	pdf.SetTitle(AppName+" — Practice Grid", true)
+	pdf.SetTitle(AppName+" - Practice Grid", true)
 	pdf.SetAuthor(AppAuthor, true)
 	pdf.SetSubject("Grid practice paper for Chinese character writing", true)
 	pdf.SetCreator(AppName+" v"+AppVersion, true)

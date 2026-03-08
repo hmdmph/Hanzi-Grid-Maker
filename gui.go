@@ -50,7 +50,10 @@ func (t *appTheme) Size(name fyne.ThemeSizeName) float32 {
 func launchGUI() {
 	a := app.NewWithID(AppID)
 	a.Settings().SetTheme(&appTheme{})
+	appIcon := fyne.NewStaticResource("icon.png", AppIconBytes)
+	a.SetIcon(appIcon)
 	w := a.NewWindow(AppName)
+	w.SetIcon(appIcon)
 
 	// ── Form fields ──────────────────────────────────────
 
@@ -152,12 +155,12 @@ func launchGUI() {
 
 	// ── Layout ───────────────────────────────────────────
 
-	// Title
-	redIcon := canvas.NewRectangle(accentRed)
-	redIcon.CornerRadius = 3
-	redIcon.SetMinSize(fyne.NewSize(24, 24))
+	// Title with app logo
+	logoImg := canvas.NewImageFromResource(fyne.NewStaticResource("icon.png", AppIconBytes))
+	logoImg.SetMinSize(fyne.NewSize(72, 72))
+	logoImg.FillMode = canvas.ImageFillContain
 
-	titleText := canvas.NewText("Hanzi Grid Maker — Xizi", accentRed)
+	titleText := canvas.NewText("Hanzi Grid Maker - Xizi", accentRed)
 	titleText.TextSize = 22
 	titleText.TextStyle = fyne.TextStyle{Bold: true}
 
@@ -168,11 +171,11 @@ func launchGUI() {
 	subtitleText.TextSize = 12
 
 	titleBlock := container.NewVBox(
-		container.NewHBox(redIcon, titleText),
+		container.NewHBox(logoImg, titleText),
 		subtitleText,
 	)
 
-	// BOX DIMENSIONS card — 2-col then 3-col rows like web UI
+	// BOX DIMENSIONS card - 2-col then 3-col rows like web UI
 	dimRow1 := container.NewGridWithColumns(2,
 		container.NewVBox(widget.NewLabel("Width (cm)"), bwEntry),
 		container.NewVBox(widget.NewLabel("Height (cm)"), bhEntry),

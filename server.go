@@ -19,6 +19,12 @@ func startServer(port int) {
 		w.Write(indexHTML)
 	})
 
+	http.HandleFunc("/icon.png", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+		w.Write(AppIconBytes)
+	})
+
 	http.HandleFunc("/generate", handleGenerate)
 
 	addr := fmt.Sprintf(":%d", port)
