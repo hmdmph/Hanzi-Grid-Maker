@@ -14,15 +14,45 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
+// ── Custom light theme with red accent ───────────────────
+
+var accentRed = color.NRGBA{R: 220, G: 53, B: 34, A: 255}
+
+type appTheme struct{}
+
+var _ fyne.Theme = (*appTheme)(nil)
+
+func (t *appTheme) Color(name fyne.ThemeColorName, _ fyne.ThemeVariant) color.Color {
+	if name == theme.ColorNamePrimary {
+		return accentRed
+	}
+	return theme.DefaultTheme().Color(name, theme.VariantLight)
+}
+
+func (t *appTheme) Font(style fyne.TextStyle) fyne.Resource {
+	return theme.DefaultTheme().Font(style)
+}
+
+func (t *appTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
+	return theme.DefaultTheme().Icon(name)
+}
+
+func (t *appTheme) Size(name fyne.ThemeSizeName) float32 {
+	return theme.DefaultTheme().Size(name)
+}
+
+// ── GUI ──────────────────────────────────────────────────
+
 func launchGUI() {
 	a := app.NewWithID(AppID)
+	a.Settings().SetTheme(&appTheme{})
 	w := a.NewWindow(AppName)
 
-	// ── Form fields ──────────────────────────────────────────
+	// ── Form fields ──────────────────────────────────────
 
 	bwEntry := newNumEntry("1.2")
 	bhEntry := newNumEntry("1.2")
@@ -44,9 +74,28 @@ func launchGUI() {
 	styleGroup.SetSelected("Plain")
 	styleGroup.Horizontal = true
 
+	// ── Save location ────────────────────────────────────
+
+	home, _ := os.UserHomeDir()
+	defaultDir := filepath.Join(home, "Documents", "berries", "print-format")
+	saveEntry := widget.NewEntry()
+	saveEntry.SetText(defaultDir)
+
+	browseBtn := widget.NewButtonWithIcon("Browse", theme.FolderOpenIcon(), func() {
+		dlg := dialog.NewFolderOpen(func(uri fyne.ListableURI, err error) {
+			if err != nil || uri == nil {
+				return
+			}
+			saveEntry.SetText(uri.Path())
+		}, w)
+		dlg.Show()
+	})
+
+	// ── Status ───────────────────────────────────────────
+
 	statusLabel := widget.NewLabel("")
 
-	// ── Generate handler ─────────────────────────────────────
+	// ── Generate handler ─────────────────────────────────
 
 	generateBtn := widget.NewButton("Generate PDF", func() {
 		style := StyleNone
@@ -69,9 +118,11 @@ func launchGUI() {
 			Style:  style,
 		}
 
-		home, _ := os.UserHomeDir()
-		outDir := filepath.Join(home, "Documents", "berries", "print-format")
-		os.MkdirAll(outDir, 0o755)
+		outDir := saveEntry.Text
+		if err := os.MkdirAll(outDir, 0o755); err != nil {
+			dialog.ShowError(err, w)
+			return
+		}
 		outPath := filepath.Join(outDir, fmt.Sprintf("printme-%.1fcm.pdf", cfg.BoxW))
 
 		f, err := os.Create(outPath)
@@ -99,50 +150,72 @@ func launchGUI() {
 	})
 	generateBtn.Importance = widget.HighImportance
 
-	// ── Layout ───────────────────────────────────────────────
+	// ── Layout ───────────────────────────────────────────
 
-	title := widget.NewRichTextFromMarkdown("# 🟥 " + AppName)
-	subtitle := canvas.NewText("Grid PDF for Chinese character practice", color.NRGBA{R: 140, G: 140, B: 140, A: 255})
-	subtitle.TextSize = 13
+	// Title
+	redIcon := canvas.NewRectangle(accentRed)
+	redIcon.CornerRadius = 3
+	redIcon.SetMinSize(fyne.NewSize(24, 24))
 
-	dimForm := widget.NewForm(
-		widget.NewFormItem("Width (cm)", bwEntry),
-		widget.NewFormItem("Height (cm)", bhEntry),
-		widget.NewFormItem("H-Gap (cm)", hgapEntry),
-		widget.NewFormItem("V-Gap (cm)", vgapEntry),
-		widget.NewFormItem("Margin (cm)", marginEntry),
+	titleText := canvas.NewText("Print Square", accentRed)
+	titleText.TextSize = 22
+	titleText.TextStyle = fyne.TextStyle{Bold: true}
+
+	subtitleText := canvas.NewText(
+		"Generate printable grid-box PDFs for Chinese character practice",
+		color.NRGBA{R: 130, G: 130, B: 130, A: 255},
+	)
+	subtitleText.TextSize = 12
+
+	titleBlock := container.NewVBox(
+		container.NewHBox(redIcon, titleText),
+		subtitleText,
 	)
 
-	textForm := widget.NewForm(
-		widget.NewFormItem("Header", headerEntry),
-		widget.NewFormItem("Footer", footerEntry),
-		widget.NewFormItem("Pages", pagesEntry),
+	// BOX DIMENSIONS card — 2-col then 3-col rows like web UI
+	dimRow1 := container.NewGridWithColumns(2,
+		container.NewVBox(widget.NewLabel("Width (cm)"), bwEntry),
+		container.NewVBox(widget.NewLabel("Height (cm)"), bhEntry),
 	)
+	dimRow2 := container.NewGridWithColumns(3,
+		container.NewVBox(widget.NewLabel("H-Gap (cm)"), hgapEntry),
+		container.NewVBox(widget.NewLabel("V-Gap (cm)"), vgapEntry),
+		container.NewVBox(widget.NewLabel("Margin (cm)"), marginEntry),
+	)
+	dimCard := widget.NewCard("BOX DIMENSIONS", "", container.NewVBox(dimRow1, dimRow2))
 
-	sectionStyle := widget.NewLabelWithStyle("Guide Line Style", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
-	sectionText := widget.NewLabelWithStyle("Header & Footer", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
-	sectionDim := widget.NewLabelWithStyle("Box Dimensions", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+	// GUIDE LINE STYLE card
+	styleCard := widget.NewCard("GUIDE LINE STYLE", "", container.NewPadded(styleGroup))
 
+	// TEXT & PAGES card
+	textContent := container.NewVBox(
+		widget.NewLabel("Header Text"),
+		headerEntry,
+		widget.NewLabel("Footer Text"),
+		footerEntry,
+		widget.NewLabel("Number of Pages"),
+		pagesEntry,
+	)
+	textCard := widget.NewCard("TEXT & PAGES", "", textContent)
+
+	// SAVE LOCATION card
+	saveLine := container.NewBorder(nil, nil, nil, browseBtn, saveEntry)
+	saveCard := widget.NewCard("SAVE LOCATION", "", saveLine)
+
+	// Assemble
 	content := container.NewVBox(
-		title,
-		subtitle,
-		widget.NewSeparator(),
-		sectionDim,
-		dimForm,
-		widget.NewSeparator(),
-		sectionStyle,
-		styleGroup,
-		widget.NewSeparator(),
-		sectionText,
-		textForm,
-		layout.NewSpacer(),
+		titleBlock,
+		dimCard,
+		styleCard,
+		textCard,
+		saveCard,
 		generateBtn,
 		statusLabel,
 	)
 
-	scroll := container.NewVScroll(content)
+	scroll := container.NewVScroll(container.NewPadded(content))
 	w.SetContent(scroll)
-	w.Resize(fyne.NewSize(480, 680))
+	w.Resize(fyne.NewSize(520, 760))
 	w.CenterOnScreen()
 	w.ShowAndRun()
 }
