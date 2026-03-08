@@ -103,13 +103,28 @@ build-all: tidy
 
 ## macOS .app bundle (native GUI)
 package-macos: build-gui
-	@rm -rf $(BUILD)/PrintSquare.app
-	@mkdir -p $(BUILD)/PrintSquare.app/Contents/MacOS
-	@mkdir -p $(BUILD)/PrintSquare.app/Contents/Resources
-	@cp $(BUILD)/$(APP)-gui $(BUILD)/PrintSquare.app/Contents/MacOS/print-square
-	@cp build/darwin/Info.plist $(BUILD)/PrintSquare.app/Contents/Info.plist
-	@echo "Packaged → $(BUILD)/PrintSquare.app"
-	@echo "To install: drag PrintSquare.app to /Applications"
+	@rm -rf $(BUILD)/Hanzi-grid-maker.app
+	@mkdir -p $(BUILD)/Hanzi-grid-maker.app/Contents/MacOS
+	@mkdir -p $(BUILD)/Hanzi-grid-maker.app/Contents/Resources
+	@cp $(BUILD)/$(APP)-gui $(BUILD)/Hanzi-grid-maker.app/Contents/MacOS/print-square
+	@cp build/darwin/Info.plist $(BUILD)/Hanzi-grid-maker.app/Contents/Info.plist
+	@# Generate .icns from image.png
+	@rm -rf $(BUILD)/_icon.iconset
+	@mkdir -p $(BUILD)/_icon.iconset
+	@sips -z 16 16     image.png --out $(BUILD)/_icon.iconset/icon_16x16.png      >/dev/null
+	@sips -z 32 32     image.png --out $(BUILD)/_icon.iconset/icon_16x16@2x.png   >/dev/null
+	@sips -z 32 32     image.png --out $(BUILD)/_icon.iconset/icon_32x32.png      >/dev/null
+	@sips -z 64 64     image.png --out $(BUILD)/_icon.iconset/icon_32x32@2x.png   >/dev/null
+	@sips -z 128 128   image.png --out $(BUILD)/_icon.iconset/icon_128x128.png    >/dev/null
+	@sips -z 256 256   image.png --out $(BUILD)/_icon.iconset/icon_128x128@2x.png >/dev/null
+	@sips -z 256 256   image.png --out $(BUILD)/_icon.iconset/icon_256x256.png    >/dev/null
+	@sips -z 512 512   image.png --out $(BUILD)/_icon.iconset/icon_256x256@2x.png >/dev/null
+	@sips -z 512 512   image.png --out $(BUILD)/_icon.iconset/icon_512x512.png    >/dev/null
+	@sips -z 1024 1024 image.png --out $(BUILD)/_icon.iconset/icon_512x512@2x.png >/dev/null
+	@iconutil -c icns $(BUILD)/_icon.iconset -o $(BUILD)/Hanzi-grid-maker.app/Contents/Resources/icon.icns
+	@rm -rf $(BUILD)/_icon.iconset
+	@echo "Packaged → $(BUILD)/Hanzi-grid-maker.app"
+	@echo "To install: drag Hanzi-grid-maker.app to /Applications"
 
 ## ── Run ──────────────────────────────────────────────────
 
