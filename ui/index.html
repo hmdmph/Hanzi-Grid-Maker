@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Print Square — Grid PDF Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f5f5f7; color: #1d1d1f; min-height: 100vh; }
+
+    .container { max-width: 600px; margin: 0 auto; padding: 40px 20px 60px; }
+
+    .brand { text-align: center; margin-bottom: 32px; }
+    .brand h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    .brand h1 span { color: #e53e3e; }
+    .brand p { color: #86868b; font-size: 14px; margin-top: 4px; }
+
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 28px; margin-bottom: 16px; }
+    .card-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #86868b; margin-bottom: 16px; }
+
+    .row { display: flex; gap: 12px; }
+    .row > * { flex: 1; }
+
+    label { display: block; font-size: 13px; font-weight: 500; color: #6e6e73; margin-bottom: 4px; }
+    input[type="number"], input[type="text"] {
+      width: 100%; padding: 10px 12px; border: 1.5px solid #d2d2d7; border-radius: 10px;
+      font-size: 15px; background: #fafafa; transition: border-color 0.2s;
+    }
+    input:focus { outline: none; border-color: #e53e3e; background: #fff; }
+    .field { margin-bottom: 14px; }
+    .hint { font-size: 11px; color: #a1a1a6; margin-top: 2px; }
+
+    /* Style selector */
+    .style-options { display: flex; gap: 10px; }
+    .style-option { flex: 1; cursor: pointer; }
+    .style-option input { display: none; }
+    .style-option .style-card {
+      border: 2px solid #d2d2d7; border-radius: 12px; padding: 12px 8px;
+      text-align: center; transition: all 0.2s;
+    }
+    .style-option input:checked + .style-card { border-color: #e53e3e; background: #fff5f5; }
+    .style-option .style-card:hover { border-color: #b0b0b5; }
+    .style-option input:checked + .style-card:hover { border-color: #e53e3e; }
+    .style-card svg { display: block; margin: 0 auto 6px; }
+    .style-card .style-name { font-size: 13px; font-weight: 600; color: #1d1d1f; }
+    .style-card .style-desc { font-size: 11px; color: #86868b; margin-top: 2px; }
+
+    .btn {
+      display: block; width: 100%; padding: 14px; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      background: #e53e3e; color: #fff;
+    }
+    .btn:hover { background: #c53030; }
+    .btn:active { transform: scale(0.98); }
+
+    .footer-note { text-align: center; margin-top: 20px; font-size: 12px; color: #a1a1a6; }
+    .footer-note a { color: #e53e3e; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand">
+      <h1>🟥 Print <span>Square</span></h1>
+      <p>Generate printable grid-box PDFs for Chinese character practice</p>
+    </div>
+
+    <form id="gridForm" action="/generate" method="post">
+
+      <!-- Box Dimensions -->
+      <div class="card">
+        <div class="card-title">Box Dimensions</div>
+        <div class="row">
+          <div class="field">
+            <label for="bw">Width (cm)</label>
+            <input type="number" id="bw" name="bw" value="1.2" min="0.3" max="10" step="0.1">
+          </div>
+          <div class="field">
+            <label for="bh">Height (cm)</label>
+            <input type="number" id="bh" name="bh" value="1.2" min="0.3" max="10" step="0.1">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="hgap">H-Gap (cm)</label>
+            <input type="number" id="hgap" name="hgap" value="0" min="0" max="5" step="0.1">
+            <div class="hint">Space between columns</div>
+          </div>
+          <div class="field">
+            <label for="vgap">V-Gap (cm)</label>
+            <input type="number" id="vgap" name="vgap" value="0.5" min="0" max="5" step="0.1">
+            <div class="hint">Space between rows</div>
+          </div>
+          <div class="field">
+            <label for="margin">Margin (cm)</label>
+            <input type="number" id="margin" name="margin" value="0.5" min="0" max="5" step="0.1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Style -->
+      <div class="card">
+        <div class="card-title">Guide Line Style</div>
+        <div class="style-options">
+          <label class="style-option">
+            <input type="radio" name="style" value="none" checked>
+            <div class="style-card">
+              <svg width="48" height="48" viewBox="0 0 48 48"><rect x="4" y="4" width="40" height="40" fill="none" stroke="#1d1d1f" stroke-width="1.5" rx="1"/></svg>
+              <div class="style-name">Plain</div>
+              <div class="style-desc">Empty box</div>
+            </div>
+          </label>
+          <label class="style-option">
+            <input type="radio" name="style" value="tianzige">
+            <div class="style-card">
+              <svg width="48" height="48" viewBox="0 0 48 48">
+                <rect x="4" y="4" width="40" height="40" fill="none" stroke="#1d1d1f" stroke-width="1.5" rx="1"/>
+                <line x1="24" y1="4" x2="24" y2="44" stroke="#bbb" stroke-width="0.8" stroke-dasharray="2,2"/>
+                <line x1="4" y1="24" x2="44" y2="24" stroke="#bbb" stroke-width="0.8" stroke-dasharray="2,2"/>
+              </svg>
+              <div class="style-name">Tián Zì Gé</div>
+              <div class="style-desc">田字格 — Cross</div>
+            </div>
+          </label>
+          <label class="style-option">
+            <input type="radio" name="style" value="mizige">
+            <div class="style-card">
+              <svg width="48" height="48" viewBox="0 0 48 48">
+                <rect x="4" y="4" width="40" height="40" fill="none" stroke="#1d1d1f" stroke-width="1.5" rx="1"/>
+                <line x1="24" y1="4" x2="24" y2="44" stroke="#bbb" stroke-width="0.8" stroke-dasharray="2,2"/>
+                <line x1="4" y1="24" x2="44" y2="24" stroke="#bbb" stroke-width="0.8" stroke-dasharray="2,2"/>
+                <line x1="4" y1="4" x2="44" y2="44" stroke="#bbb" stroke-width="0.8" stroke-dasharray="2,2"/>
+                <line x1="44" y1="4" x2="4" y2="44" stroke="#bbb" stroke-width="0.8" stroke-dasharray="2,2"/>
+              </svg>
+              <div class="style-name">Mǐ Zì Gé</div>
+              <div class="style-desc">米字格 — Star</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Header / Footer / Pages -->
+      <div class="card">
+        <div class="card-title">Text &amp; Pages</div>
+        <div class="field">
+          <label for="header">Header Text</label>
+          <input type="text" id="header" name="header" placeholder="e.g. TS Printables">
+        </div>
+        <div class="field">
+          <label for="footer">Footer Text</label>
+          <input type="text" id="footer" name="footer" placeholder="e.g. I can do this">
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="pages">Number of Pages</label>
+            <input type="number" id="pages" name="pages" value="2" min="1" max="100" step="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate -->
+      <button type="submit" class="btn">Download PDF</button>
+    </form>
+
+    <div class="footer-note">
+      <a href="https://github.com/nicober/print-square" target="_blank">print-square</a> — open-source grid PDF generator
+    </div>
+  </div>
+</body>
+</html>
