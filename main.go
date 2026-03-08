@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -18,13 +19,27 @@ func main() {
 	pages := flag.Int("pages", 2, "Number of pages to generate")
 	marginLR := flag.Float64("margin", 0.5, "Left/right page margin in cm")
 	style := flag.String("style", "none", "Guide line style: none, tianzige, mizige")
-	ui := flag.Bool("ui", false, "Launch web UI instead of CLI mode")
+	ui := flag.Bool("ui", false, "Launch native desktop GUI")
+	web := flag.Bool("web", false, "Launch browser-based web UI")
 	port := flag.Int("port", 8080, "Port for web UI server")
 
 	flag.Parse()
 
-	// Web UI mode
+	// Auto-detect macOS .app bundle launch → default to GUI
+	exe, _ := os.Executable()
+	if !*ui && !*web && strings.Contains(exe, ".app/Contents/MacOS/") {
+		launchGUI()
+		return
+	}
+
+	// Native GUI mode
 	if *ui {
+		launchGUI()
+		return
+	}
+
+	// Browser-based web UI mode
+	if *web {
 		startServer(*port)
 		return
 	}

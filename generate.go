@@ -7,6 +7,13 @@ import (
 	"github.com/jung-kurt/gofpdf"
 )
 
+const (
+	AppName    = "Print Square"
+	AppVersion = "1.0.0"
+	AppID      = "com.tsprintables.printsquare"
+	AppAuthor  = "TS Printables"
+)
+
 type GridStyle string
 
 const (
@@ -78,6 +85,13 @@ func GeneratePDF(cfg GridConfig, w io.Writer) (GridInfo, error) {
 
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.SetAutoPageBreak(false, 0)
+
+	// PDF metadata
+	pdf.SetTitle(AppName+" — Practice Grid", true)
+	pdf.SetAuthor(AppAuthor, true)
+	pdf.SetSubject("Grid practice paper for Chinese character writing", true)
+	pdf.SetCreator(AppName+" v"+AppVersion, true)
+	pdf.SetKeywords("grid chinese practice tianzige mizige calligraphy writing", true)
 
 	pages := cfg.Pages
 	if pages < 1 {
