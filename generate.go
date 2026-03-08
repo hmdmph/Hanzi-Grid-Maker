@@ -11,7 +11,7 @@ const (
 	AppName    = "Print Square"
 	AppVersion = "1.0.0"
 	AppID      = "com.tsprintables.printsquare"
-	AppAuthor  = "TS Printables"
+	AppAuthor  = "TS Printables<hmdmph@gmail.com>"
 )
 
 type GridStyle string
@@ -23,11 +23,11 @@ const (
 )
 
 type GridConfig struct {
-	BoxW   float64   // cm
-	BoxH   float64   // cm
-	HGap   float64   // cm
-	VGap   float64   // cm
-	Margin float64   // cm
+	BoxW   float64 // cm
+	BoxH   float64 // cm
+	HGap   float64 // cm
+	VGap   float64 // cm
+	Margin float64 // cm
 	Pages  int
 	Header string
 	Footer string
@@ -171,8 +171,8 @@ func drawGuideLines(pdf *gofpdf.Fpdf, style GridStyle, x, y, w, h float64) {
 
 	// Mizige adds diagonals
 	if style == StyleMiZiGe {
-		pdf.Line(x, y, x+w, y+h)   // top-left → bottom-right
-		pdf.Line(x+w, y, x, y+h)   // top-right → bottom-left
+		pdf.Line(x, y, x+w, y+h) // top-left → bottom-right
+		pdf.Line(x+w, y, x, y+h) // top-right → bottom-left
 	}
 
 	// Reset dash
