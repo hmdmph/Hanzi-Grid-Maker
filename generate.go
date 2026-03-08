@@ -7,6 +7,13 @@ import (
 	"github.com/jung-kurt/gofpdf"
 )
 
+const (
+	AppName    = "Print Square"
+	AppVersion = "1.0.0"
+	AppID      = "com.tsprintables.printsquare"
+	AppAuthor  = "TS Printables<hmdmph@gmail.com>"
+)
+
 type GridStyle string
 
 const (
@@ -16,11 +23,11 @@ const (
 )
 
 type GridConfig struct {
-	BoxW   float64   // cm
-	BoxH   float64   // cm
-	HGap   float64   // cm
-	VGap   float64   // cm
-	Margin float64   // cm
+	BoxW   float64 // cm
+	BoxH   float64 // cm
+	HGap   float64 // cm
+	VGap   float64 // cm
+	Margin float64 // cm
 	Pages  int
 	Header string
 	Footer string
@@ -78,6 +85,13 @@ func GeneratePDF(cfg GridConfig, w io.Writer) (GridInfo, error) {
 
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.SetAutoPageBreak(false, 0)
+
+	// PDF metadata
+	pdf.SetTitle(AppName+" — Practice Grid", true)
+	pdf.SetAuthor(AppAuthor, true)
+	pdf.SetSubject("Grid practice paper for Chinese character writing", true)
+	pdf.SetCreator(AppName+" v"+AppVersion, true)
+	pdf.SetKeywords("grid chinese practice tianzige mizige calligraphy writing", true)
 
 	pages := cfg.Pages
 	if pages < 1 {
@@ -157,8 +171,8 @@ func drawGuideLines(pdf *gofpdf.Fpdf, style GridStyle, x, y, w, h float64) {
 
 	// Mizige adds diagonals
 	if style == StyleMiZiGe {
-		pdf.Line(x, y, x+w, y+h)   // top-left → bottom-right
-		pdf.Line(x+w, y, x, y+h)   // top-right → bottom-left
+		pdf.Line(x, y, x+w, y+h) // top-left → bottom-right
+		pdf.Line(x+w, y, x, y+h) // top-right → bottom-left
 	}
 
 	// Reset dash

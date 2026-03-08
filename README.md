@@ -1,8 +1,10 @@
-# 🟥 print-square
+# 🟥 Print Square
 
-A simple, cross-platform tool to generate printable grid-box PDFs on A4 paper — perfect for **Chinese character writing practice**.
+A cross-platform tool to generate printable grid-box PDFs on A4 paper — built for **Chinese character writing practice**.
 
-Supports three grid styles used in Chinese calligraphy education:
+Available as a **native desktop app** (macOS `.app`, Windows `.exe`) or a **CLI** for power users.
+
+## Grid Styles
 
 | Style | Name | Description |
 |-------|------|-------------|
@@ -12,15 +14,28 @@ Supports three grid styles used in Chinese calligraphy education:
 
 ## Quick Start
 
-### Option A: Web UI (recommended for non-technical users)
+### Option A: Native Desktop App (recommended)
+
+Double-click **PrintSquare.app** (macOS) or **print-square-gui.exe** (Windows).
+
+A native window opens with form fields, style selection, and a Generate button. No browser, no terminal needed.
+
+**Build the app yourself:**
 
 ```bash
-make ui
+make build-gui      # build native GUI binary
+make package-macos  # create macOS .app bundle
 ```
 
-This opens a browser with a simple interface where you can adjust all settings and download your PDF.
+### Option B: Browser-Based Web UI
 
-### Option B: Command Line
+```bash
+make web
+```
+
+Opens a browser with an embedded UI. Works without CGO — useful on headless machines or when you can't build the native GUI.
+
+### Option C: Command Line (pro users)
 
 ```bash
 # Plain 1.2cm boxes, 2 pages
@@ -42,21 +57,28 @@ Requires [Go 1.21+](https://go.dev/dl/).
 ```bash
 git clone https://github.com/nicober/print-square.git
 cd print-square
-make build
+make build       # CLI only (no CGO needed)
+make build-gui   # native GUI (requires CGO)
 ```
 
-The binary is built to `./build/print-square`.
+### macOS App Bundle
 
-### Cross-compile for all platforms
+```bash
+make package-macos
+# → ./build/PrintSquare.app
+# Drag to /Applications to install
+```
+
+### Cross-compile CLI for all platforms
 
 ```bash
 make build-all
 ```
 
-Produces binaries in `./build/` for:
-- macOS (Intel + Apple Silicon)
-- Linux (amd64 + arm64)
-- Windows (amd64)
+Produces CLI binaries in `./build/` for:
+- **macOS** (Intel + Apple Silicon)
+- **Linux** (amd64 + arm64)
+- **Windows** (amd64)
 
 ## CLI Flags
 
@@ -72,33 +94,46 @@ Produces binaries in `./build/` for:
 | `-header` | | Header text (centered) |
 | `-footer` | | Footer text (left-aligned, page number on right) |
 | `-o` | `~/Documents/berries/print-format/printme-<size>.pdf` | Output file path |
-| `-ui` | `false` | Launch web UI instead of CLI |
+| `-ui` | `false` | Launch native desktop GUI |
+| `-web` | `false` | Launch browser-based web UI |
 | `-port` | `8080` | Port for web UI server |
 
-## Web UI
+## Architecture
 
-Run `print-square -ui` (or `make ui`) to launch a local web server with a clean form interface. Your browser opens automatically. No internet connection required — the UI is fully embedded in the binary.
+The project uses **Go build tags** to keep the CLI small and dependency-free, while the native GUI is opt-in:
 
-The UI lets you:
-- Set box dimensions and gaps
-- Pick a grid style with visual previews
-- Add header/footer text
-- Set page count
-- Download the generated PDF instantly
+- **`make build`** → CLI binary. No CGO, no native deps. Cross-compiles to any OS.
+- **`make build-gui`** → Native GUI binary. Uses [Fyne](https://fyne.io) toolkit (requires CGO). Produces a real desktop window — not a browser.
+- The macOS `.app` bundle **auto-detects** that it's running from a bundle and launches the GUI without needing `-ui`.
 
-## Project Structure
+### Project Structure
 
 ```
 print-square/
-├── main.go          # CLI entry point & flag parsing
-├── generate.go      # PDF generation engine
-├── server.go        # Web UI HTTP server
+├── main.go          # Entry point: CLI / GUI / web routing
+├── generate.go      # PDF generation engine + metadata
+├── gui.go           # Native Fyne GUI (build tag: gui)
+├── gui_stub.go      # Stub when built without GUI
+├── server.go        # Browser-based web UI server
 ├── ui/
-│   └── index.html   # Embedded web interface
-├── Makefile         # Build, run, cross-compile
+│   └── index.html   # Embedded HTML for web UI
+├── build/
+│   └── darwin/
+│       └── Info.plist  # macOS app bundle config
+├── Makefile         # Build, package, run targets
 ├── LICENSE          # MIT
-└── README.md
+├── README.md
+└── blog.md          # Origin story
 ```
+
+## PDF Metadata
+
+Generated PDFs include embedded metadata:
+- **Title:** Print Square — Practice Grid
+- **Author:** TS Printables
+- **Subject:** Grid practice paper for Chinese character writing
+- **Creator:** Print Square v1.0.0
+- **Keywords:** grid, chinese, practice, tianzige, mizige, calligraphy, writing
 
 ## License
 
