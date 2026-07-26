@@ -153,3 +153,4 @@ tidy:
 ## Remove build artifacts
 clean:
 	rm -rf $(BUILD)/$(APP) $(BUILD)/$(APP)-gui $(BUILD)/$(APP)-* $(BUILD)/PrintSquare.app
+
