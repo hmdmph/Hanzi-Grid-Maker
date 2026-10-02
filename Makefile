@@ -107,7 +107,7 @@ package-macos: build-gui
 	@mkdir -p $(BUILD)/Hanzi-grid-maker.app/Contents/MacOS
 	@mkdir -p $(BUILD)/Hanzi-grid-maker.app/Contents/Resources
 	@cp $(BUILD)/$(APP)-gui $(BUILD)/Hanzi-grid-maker.app/Contents/MacOS/print-square
-	@cp build/darwin/Info.plist $(BUILD)/Hanzi-grid-maker.app/Contents/Info.plist
+	@cp packaging/darwin/Info.plist $(BUILD)/Hanzi-grid-maker.app/Contents/Info.plist
 	@# Generate .icns from image.png
 	@rm -rf $(BUILD)/_icon.iconset
 	@mkdir -p $(BUILD)/_icon.iconset
