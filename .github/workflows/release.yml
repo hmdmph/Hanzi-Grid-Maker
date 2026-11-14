@@ -46,7 +46,7 @@ jobs:
       - name: Build Linux native GUI binary
         run: make build-gui
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: cli-and-linux-gui
           path: build/hanze-grid-maker-*
@@ -70,7 +70,7 @@ jobs:
       - name: Zip the .app bundle
         run: cd build && zip -r Hanzi-grid-maker.app.zip Hanzi-grid-maker.app
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: macos-app
           path: build/Hanzi-grid-maker.app.zip
