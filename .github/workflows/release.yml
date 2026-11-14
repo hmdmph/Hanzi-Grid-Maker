@@ -9,6 +9,12 @@ on:
       tag:
         description: "Existing tag to build and release (for manual dry runs)"
         required: true
+  workflow_call:
+    inputs:
+      tag:
+        description: "Tag to build and release"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -17,20 +23,22 @@ jobs:
   build-cli-and-linux-gui:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          ref: ${{ inputs.tag || github.ref }}
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.26"
+          check-latest: true
 
       - name: Install Fyne/X11 build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             libgl1-mesa-dev libxkbcommon-dev libxrandr-dev \
-            libxcursor-dev libxinerama-dev libxi-dev xorg-dev
+            libxcursor-dev libxinerama-dev libxi-dev xorg-dev \
+            libwayland-dev wayland-protocols
 
       - name: Build CLI binaries for all platforms
         run: make build-all
@@ -38,7 +46,7 @@ jobs:
       - name: Build Linux native GUI binary
         run: make build-gui
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: cli-and-linux-gui
           path: build/hanze-grid-maker-*
@@ -47,13 +55,14 @@ jobs:
   build-macos-app:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          ref: ${{ inputs.tag || github.ref }}
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.26"
+          check-latest: true
 
       - name: Build macOS .app bundle
         run: make package-macos
@@ -61,7 +70,7 @@ jobs:
       - name: Zip the .app bundle
         run: cd build && zip -r Hanzi-grid-maker.app.zip Hanzi-grid-maker.app
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: macos-app
           path: build/Hanzi-grid-maker.app.zip
@@ -71,9 +80,9 @@ jobs:
     needs: [build-cli-and-linux-gui, build-macos-app]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           path: release-assets
           merge-multiple: true
@@ -82,7 +91,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          tag="${{ inputs.tag || github.ref_name }}"
           gh release create "$tag" release-assets/* \
             --title "$tag" \
             --generate-notes

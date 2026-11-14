@@ -11,12 +11,16 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: biweekly-dep-update
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
-
       - name: Decide whether today is a scheduled update day
         id: gate
         run: |
@@ -35,42 +39,80 @@ jobs:
             echo "run=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+        if: steps.gate.outputs.run == 'true'
+        with:
+          fetch-depth: 0 # need full history + all tags to compute the next version
+
+      - uses: actions/setup-go@v6
         if: steps.gate.outputs.run == 'true'
         with:
           go-version: "1.26"
+          check-latest: true
+
+      - name: Install Fyne build dependencies
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1-mesa-dev libxkbcommon-dev libxrandr-dev \
+            libxcursor-dev libxinerama-dev libxi-dev xorg-dev \
+            libwayland-dev wayland-protocols
 
       - name: Update Go dependencies
         if: steps.gate.outputs.run == 'true'
-        id: deps
         run: |
           go get -u ./...
+          go get -u -tags gui ./...
           go mod tidy
+          git diff --stat -- go.mod go.sum
+
+      # Never commit or release dependency bumps that break the build.
+      - name: Verify build with updated dependencies
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          go vet ./...
+          CGO_ENABLED=0 go build -o /dev/null .
+          CGO_ENABLED=1 go build -tags gui -o /dev/null .
+
+      - name: Commit and push dependency changes
+        if: steps.gate.outputs.run == 'true'
+        run: |
           if git diff --quiet -- go.mod go.sum; then
             echo "No dependency changes."
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
-
-      - name: Commit, bump version tag, and push
-        if: steps.gate.outputs.run == 'true' && steps.deps.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add go.mod go.sum
           git commit -m "chore: biweekly dependency update"
           git push origin HEAD:main
 
-          latest_tag=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
-          if [ -z "$latest_tag" ]; then
-            latest_tag="0.0.0"
+      # Tag whenever HEAD has commits that aren't in any release tag yet
+      # (covers both fresh dep bumps and any manual commits since the last release).
+      - name: Create next version tag
+        if: steps.gate.outputs.run == 'true'
+        id: tag
+        run: |
+          latest_tag=$(git tag --list '[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)
+          if [ -n "$latest_tag" ] && [ "$(git rev-list "$latest_tag"..HEAD --count)" -eq 0 ]; then
+            echo "HEAD is already tagged as $latest_tag — nothing to release."
+            exit 0
           fi
-          IFS='.' read -r major minor patch <<< "$latest_tag"
+          IFS='.' read -r major minor patch <<< "${latest_tag:-0.0.0}"
           new_tag="${major}.${minor}.$((patch + 1))"
-
           git tag "$new_tag"
           git push origin "$new_tag"
-          echo "Pushed tag $new_tag — release.yml will build and publish it."
+          echo "tag=$new_tag" >> "$GITHUB_OUTPUT"
+          echo "Pushed tag $new_tag"
+
+  # Tags pushed with GITHUB_TOKEN do NOT trigger other workflows' `on: push`,
+  # so call the release workflow directly instead of relying on the tag push.
+  release:
+    needs: update
+    if: needs.update.outputs.tag != ''
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.update.outputs.tag }}
+    permissions:
+      contents: write
